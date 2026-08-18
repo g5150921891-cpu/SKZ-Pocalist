@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SKZ Pocalist</title>
 
   <style>
@@ -20,7 +21,7 @@
     header {
       background: #111;
       color: white;
-      padding: 25px 20px;
+      padding: 28px 20px;
       text-align: center;
     }
 
@@ -31,42 +32,62 @@
 
     header p {
       margin: 8px 0 0;
-      color: #ccc;
+      color: #bbb;
+      font-size: 14px;
     }
 
     .container {
       max-width: 900px;
-      margin: 30px auto;
-      padding: 0 20px;
+      margin: 0 auto;
+      padding: 25px 16px 50px;
+    }
+
+    .status {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .status strong {
+      font-size: 24px;
     }
 
     .search {
       width: 100%;
-      padding: 14px;
+      padding: 14px 16px;
       border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-      margin-bottom: 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 15px;
+    }
+
+    .search:focus {
+      border-color: #888;
     }
 
     .members {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 30px;
+      gap: 8px;
+      margin-bottom: 25px;
     }
 
     .member {
-      border: none;
-      padding: 12px 5px;
+      border: 0;
+      padding: 11px 5px;
       border-radius: 10px;
       background: white;
       cursor: pointer;
-      font-weight: bold;
+      font-size: 14px;
     }
 
-    .member:hover {
-      background: #eaeaea;
+    .member.active {
+      background: #111;
+      color: white;
     }
 
     .cards {
@@ -76,40 +97,102 @@
     }
 
     .card {
+      position: relative;
       background: white;
       border-radius: 15px;
-      padding: 25px 15px;
-      text-align: center;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      padding: 12px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      transition: 0.2s;
+      border: 3px solid transparent;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .card.is-owned {
+      border-color: #222;
     }
 
     .card-image {
-      height: 180px;
+      width: 100%;
+      height: 230px;
       background: #eee;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: #999;
-      margin-bottom: 12px;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .card.is-owned .card-image {
+      opacity: 0.75;
     }
 
     .card h3 {
-      margin: 5px 0;
+      margin: 12px 3px 4px;
+      font-size: 16px;
     }
 
     .card p {
-      margin: 5px 0;
+      margin: 0 3px;
       color: #777;
+      font-size: 13px;
+    }
+
+    .owned {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #111;
+      color: white;
+      padding: 6px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .card.is-owned .owned {
+      display: block;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 50px 20px;
+      color: #999;
     }
 
     @media (max-width: 600px) {
+
+      header h1 {
+        font-size: 24px;
+      }
+
       .members {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
       }
 
       .cards {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .card {
+        padding: 8px;
+      }
+
+      .card-image {
+        height: 210px;
+      }
+
+      .owned {
+        top: 15px;
+        right: 15px;
       }
     }
   </style>
@@ -124,53 +207,81 @@
 
   <div class="container">
 
+    <div class="status">
+      <strong>
+        <span id="ownedCount">0</span> / <span id="totalCount">8</span>
+      </strong>
+      <div>보유 포카</div>
+    </div>
+
     <input
+      id="search"
       class="search"
       type="text"
       placeholder="포카를 검색해보세요 🔍"
     >
 
     <div class="members">
-      <button class="member">전체</button>
-      <button class="member">방찬</button>
-      <button class="member">리노</button>
-      <button class="member">창빈</button>
-      <button class="member">현진</button>
-      <button class="member">한</button>
-      <button class="member">필릭스</button>
-      <button class="member">승민</button>
-      <button class="member">아이엔</button>
+
+      <button class="member active" onclick="filterMember('전체', this)">
+        전체
+      </button>
+
+      <button class="member" onclick="filterMember('방찬', this)">
+        방찬
+      </button>
+
+      <button class="member" onclick="filterMember('리노', this)">
+        리노
+      </button>
+
+      <button class="member" onclick="filterMember('창빈', this)">
+        창빈
+      </button>
+
+      <button class="member" onclick="filterMember('현진', this)">
+        현진
+      </button>
+
+      <button class="member" onclick="filterMember('한', this)">
+        한
+      </button>
+
+      <button class="member" onclick="filterMember('필릭스', this)">
+        필릭스
+      </button>
+
+      <button class="member" onclick="filterMember('승민', this)">
+        승민
+      </button>
+
+      <button class="member" onclick="filterMember('아이엔', this)">
+        아이엔
+      </button>
+
     </div>
 
-    <div class="cards">
+    <div class="cards" id="cards">
 
-      <div class="card">
+      <div class="card" data-member="필릭스" data-name="필릭스 포카 1" onclick="toggleOwned(this)">
         <div class="card-image">포카 이미지</div>
         <h3>필릭스</h3>
         <p>앨범 / 버전</p>
+        <div class="owned">✓ 보유</div>
       </div>
 
-      <div class="card">
+      <div class="card" data-member="필릭스" data-name="필릭스 포카 2" onclick="toggleOwned(this)">
         <div class="card-image">포카 이미지</div>
         <h3>필릭스</h3>
         <p>앨범 / 버전</p>
+        <div class="owned">✓ 보유</div>
       </div>
 
-      <div class="card">
+      <div class="card" data-member="현진" data-name="현진 포카 1" onclick="toggleOwned(this)">
         <div class="card-image">포카 이미지</div>
         <h3>현진</h3>
         <p>앨범 / 버전</p>
+        <div class="owned">✓ 보유</div>
       </div>
 
-      <div class="card">
-        <div class="card-image">포카 이미지</div>
-        <h3>리노</h3>
-        <p>앨범 / 버전</p>
-      </div>
-
-    </div>
-
-  </div>
-
-</body>
-</html>
+      <div class="card" data-member="리노" data-name="리노 포카 1" onclick="toggle
