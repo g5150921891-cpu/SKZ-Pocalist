@@ -3,12 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>포카 리스트</title>
+  <title>SKZ Pocalist</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #222;
+    }
+
+    header {
+      background: #111;
+      color: white;
+      padding: 25px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      color: #ccc;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .search {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .members {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .member {
+      border: none;
+      padding: 12px 5px;
+      border-radius: 10px;
+      background: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .member:hover {
+      background: #eaeaea;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px 15px;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    .card-image {
+      height: 180px;
+      background: #eee;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      margin: 5px 0;
+    }
+
+    .card p {
+      margin: 5px 0;
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      .members {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-  <h1>포카 리스트</h1>
-  <p>나의 포토카드 목록</p>
+  <header>
+    <h1>SKZ Pocalist</h1>
+    <p>My Stray Kids Photocard List</p>
+  </header>
+
+  <div class="container">
+
+    <input
+      class="search"
+      type="text"
+      placeholder="포카를 검색해보세요 🔍"
+    >
+
+    <div class="members">
+      <button class="member">전체</button>
+      <button class="member">방찬</button>
+      <button class="member">리노</button>
+      <button class="member">창빈</button>
+      <button class="member">현진</button>
+      <button class="member">한</button>
+      <button class="member">필릭스</button>
+      <button class="member">승민</button>
+      <button class="member">아이엔</button>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-image">포카 이미지</div>
+        <h3>필릭스</h3>
+        <p>앨범 / 버전</p>
+      </div>
+
+      <div class="card">
+        <div class="card-image">포카 이미지</div>
+        <h3>필릭스</h3>
+        <p>앨범 / 버전</p>
+      </div>
+
+      <div class="card">
+        <div class="card-image">포카 이미지</div>
+        <h3>현진</h3>
+        <p>앨범 / 버전</p>
+      </div>
+
+      <div class="card">
+        <div class="card-image">포카 이미지</div>
+        <h3>리노</h3>
+        <p>앨범 / 버전</p>
+      </div>
+
+    </div>
+
+  </div>
 
 </body>
 </html>
