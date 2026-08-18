@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>SKZ Pocalist</title>
 
   <style>
@@ -61,6 +62,7 @@
       border-radius: 12px;
       font-size: 15px;
       margin-bottom: 15px;
+      background: white;
     }
 
     .members {
@@ -98,11 +100,6 @@
       cursor: pointer;
       border: 3px solid transparent;
       box-shadow: 0 3px 10px rgba(0,0,0,0.07);
-      transition: 0.15s;
-    }
-
-    .card:active {
-      transform: scale(0.97);
     }
 
     .card.is-owned {
@@ -128,19 +125,25 @@
       display: block;
     }
 
-    .card.is-owned .card-image {
-      opacity: 0.7;
-    }
-
     .card h3 {
       margin: 12px 3px 4px;
       font-size: 16px;
     }
 
     .card p {
-      margin: 0 3px;
+      margin: 3px;
       color: #777;
       font-size: 13px;
+    }
+
+    .card-type {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 4px 8px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #555;
     }
 
     .owned {
@@ -160,7 +163,100 @@
       display: block;
     }
 
+    .edit-button {
+      width: 100%;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 9px;
+      padding: 9px;
+      background: #f1f1f1;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .edit-button:active {
+      background: #ddd;
+    }
+
+    /* 수정창 */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 430px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .modal-box h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      background: white;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .modal-buttons button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .cancel-button {
+      background: #eee;
+    }
+
+    .save-button {
+      background: #111;
+      color: white;
+    }
+
     @media (max-width: 600px) {
+
       .members {
         grid-template-columns: repeat(3, 1fr);
       }
@@ -191,7 +287,8 @@
 
   <div class="status">
     <div class="status-number">
-      <span id="ownedCount">0</span> / <span id="totalCount">8</span>
+      <span id="ownedCount">0</span> /
+      <span id="totalCount">8</span>
     </div>
     <div>보유 포카</div>
   </div>
@@ -204,6 +301,7 @@
   >
 
   <div class="members">
+
     <button class="member active" data-member="전체">전체</button>
     <button class="member" data-member="방찬">방찬</button>
     <button class="member" data-member="리노">리노</button>
@@ -213,156 +311,529 @@
     <button class="member" data-member="필릭스">필릭스</button>
     <button class="member" data-member="승민">승민</button>
     <button class="member" data-member="아이엔">아이엔</button>
-  </div>
-
-  <div class="cards">
-
-    <!-- 첫 번째 필릭스 포카 -->
-    <div class="card" data-member="필릭스">
-      <div class="card-image">
-        <img
-          src="https://cvxmuuzrfmqrsralozxe.supabase.co/storage/v1/object/public/photocards/Screenshot_20260818_085423.jpg"
-          alt="필릭스 포카"
-        >
-      </div>
-      <h3>필릭스</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 두 번째 필릭스 -->
-    <div class="card" data-member="필릭스">
-      <div class="card-image">포카 이미지</div>
-      <h3>필릭스</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 현진 -->
-    <div class="card" data-member="현진">
-      <div class="card-image">포카 이미지</div>
-      <h3>현진</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 리노 -->
-    <div class="card" data-member="리노">
-      <div class="card-image">포카 이미지</div>
-      <h3>리노</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 방찬 -->
-    <div class="card" data-member="방찬">
-      <div class="card-image">포카 이미지</div>
-      <h3>방찬</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 창빈 -->
-    <div class="card" data-member="창빈">
-      <div class="card-image">포카 이미지</div>
-      <h3>창빈</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 한 -->
-    <div class="card" data-member="한">
-      <div class="card-image">포카 이미지</div>
-      <h3>한</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
-    <!-- 승민 -->
-    <div class="card" data-member="승민">
-      <div class="card-image">포카 이미지</div>
-      <h3>승민</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
 
   </div>
+
+  <div class="cards" id="cards"></div>
+
 </div>
 
+
+<!-- 수정창 -->
+
+<div class="modal" id="editModal">
+
+  <div class="modal-box">
+
+    <h2>포카 정보 수정</h2>
+
+    <div class="form-group">
+      <label>멤버</label>
+
+      <select id="editMember">
+        <option>방찬</option>
+        <option>리노</option>
+        <option>창빈</option>
+        <option>현진</option>
+        <option>한</option>
+        <option>필릭스</option>
+        <option>승민</option>
+        <option>아이엔</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>포카 종류</label>
+
+      <select id="editType">
+        <option>앨범</option>
+        <option>미공포</option>
+        <option>특전</option>
+        <option>팬사인회</option>
+        <option>기타</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>앨범 / 행사명</label>
+
+      <input
+        id="editAlbum"
+        type="text"
+        placeholder="예: ATE / 2026 팬미팅"
+      >
+    </div>
+
+    <div class="form-group">
+      <label>버전</label>
+
+      <input
+        id="editVersion"
+        type="text"
+        placeholder="예: A VER. / 일반"
+      >
+    </div>
+
+    <div class="form-group">
+      <label>사진 URL</label>
+
+      <input
+        id="editImage"
+        type="text"
+        placeholder="Supabase 사진 URL"
+      >
+    </div>
+
+    <div class="modal-buttons">
+
+      <button
+        class="cancel-button"
+        onclick="closeEdit()"
+      >
+        취소
+      </button>
+
+      <button
+        class="save-button"
+        onclick="saveEdit()"
+      >
+        저장
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
-  const cards = document.querySelectorAll(".card");
-  const buttons = document.querySelectorAll(".member");
-  const search = document.getElementById("search");
-  const ownedCount = document.getElementById("ownedCount");
+
+  const defaultCards = [
+
+    {
+      member: "필릭스",
+      type: "미공포",
+      album: "",
+      version: "",
+      image: "https://cvxmuuzrfmqrsralozxe.supabase.co/storage/v1/object/public/photocards/Screenshot_20260818_085423.jpg",
+      owned: false
+    },
+
+    {
+      member: "필릭스",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "현진",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "리노",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "방찬",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "창빈",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "한",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    },
+
+    {
+      member: "승민",
+      type: "앨범",
+      album: "",
+      version: "",
+      image: "",
+      owned: false
+    }
+
+  ];
+
+
+  let cardsData =
+    JSON.parse(localStorage.getItem("skzPocalistCards"))
+    || defaultCards;
+
 
   let selectedMember = "전체";
+  let editingIndex = null;
 
-  // 포카 클릭
-  cards.forEach(function(card) {
-    card.addEventListener("click", function() {
-      card.classList.toggle("is-owned");
-      updateCount();
-    });
-  });
 
-  // 보유 개수 업데이트
-  function updateCount() {
-    let count = 0;
+  const cardsContainer =
+    document.getElementById("cards");
 
-    cards.forEach(function(card) {
-      if (card.classList.contains("is-owned")) {
-        count++;
-      }
-    });
+  const ownedCount =
+    document.getElementById("ownedCount");
 
-    ownedCount.textContent = count;
+  const totalCount =
+    document.getElementById("totalCount");
+
+  const search =
+    document.getElementById("search");
+
+
+  function saveData() {
+
+    localStorage.setItem(
+      "skzPocalistCards",
+      JSON.stringify(cardsData)
+    );
+
   }
 
-  // 멤버 선택
-  buttons.forEach(function(button) {
-    button.addEventListener("click", function() {
 
-      buttons.forEach(function(btn) {
-        btn.classList.remove("active");
-      });
+  function renderCards() {
 
-      button.classList.add("active");
+    cardsContainer.innerHTML = "";
 
-      selectedMember = button.dataset.member;
+    const keyword =
+      search.value.toLowerCase();
 
-      filterCards();
-    });
-  });
 
-  // 검색
-  search.addEventListener("input", function() {
-    filterCards();
-  });
-
-  function filterCards() {
-
-    const keyword = search.value.toLowerCase();
-
-    cards.forEach(function(card) {
-
-      const member = card.dataset.member.toLowerCase();
+    cardsData.forEach(function(card, index) {
 
       const memberMatch =
-        selectedMember === "전체" ||
-        member === selectedMember.toLowerCase();
+        selectedMember === "전체"
+        || card.member === selectedMember;
+
+
+      const searchText =
+        (
+          card.member +
+          " " +
+          card.type +
+          " " +
+          card.album +
+          " " +
+          card.version
+        ).toLowerCase();
+
 
       const searchMatch =
-        member.includes(keyword);
+        searchText.includes(keyword);
 
-      if (memberMatch && searchMatch) {
-        card.style.display = "";
-      } else {
-        card.style.display = "none";
+
+      if (!memberMatch || !searchMatch) {
+        return;
       }
+
+
+      const div =
+        document.createElement("div");
+
+      div.className = "card";
+
+      if (card.owned) {
+        div.classList.add("is-owned");
+      }
+
+
+      let imageHTML = "";
+
+      if (card.image) {
+
+        imageHTML = `
+          <img
+            src="${card.image}"
+            alt="${card.member} 포카"
+          >
+        `;
+
+      } else {
+
+        imageHTML = "포카 이미지";
+
+      }
+
+
+      div.innerHTML = `
+
+        <div class="card-image">
+          ${imageHTML}
+        </div>
+
+        <h3>${card.member}</h3>
+
+        <p>
+          ${card.album || "앨범 / 행사명 미입력"}
+        </p>
+
+        <p>
+          ${card.version || ""}
+        </p>
+
+        <span class="card-type">
+          ${card.type}
+        </span>
+
+        <div class="owned">
+          ✓ 보유
+        </div>
+
+        <button class="edit-button">
+          ✏️ 정보 수정
+        </button>
+
+      `;
+
+
+      div.addEventListener(
+        "click",
+        function(event) {
+
+          if (
+            event.target.classList.contains(
+              "edit-button"
+            )
+          ) {
+            return;
+          }
+
+          cardsData[index].owned =
+            !cardsData[index].owned;
+
+          saveData();
+
+          renderCards();
+
+          updateCount();
+
+        }
+      );
+
+
+      const editButton =
+        div.querySelector(".edit-button");
+
+
+      editButton.addEventListener(
+        "click",
+        function(event) {
+
+          event.stopPropagation();
+
+          openEdit(index);
+
+        }
+      );
+
+
+      cardsContainer.appendChild(div);
+
     });
+
+
+    totalCount.textContent =
+      cardsData.length;
+
+    updateCount();
+
   }
 
-  updateCount();
+
+  function updateCount() {
+
+    let count = 0;
+
+
+    cardsData.forEach(function(card) {
+
+      if (card.owned) {
+        count++;
+      }
+
+    });
+
+
+    ownedCount.textContent =
+      count;
+
+  }
+
+
+  function openEdit(index) {
+
+    editingIndex = index;
+
+    const card =
+      cardsData[index];
+
+
+    document.getElementById(
+      "editMember"
+    ).value = card.member;
+
+
+    document.getElementById(
+      "editType"
+    ).value = card.type;
+
+
+    document.getElementById(
+      "editAlbum"
+    ).value = card.album;
+
+
+    document.getElementById(
+      "editVersion"
+    ).value = card.version;
+
+
+    document.getElementById(
+      "editImage"
+    ).value = card.image;
+
+
+    document.getElementById(
+      "editModal"
+    ).classList.add("show");
+
+  }
+
+
+  function closeEdit() {
+
+    editingIndex = null;
+
+    document.getElementById(
+      "editModal"
+    ).classList.remove("show");
+
+  }
+
+
+  function saveEdit() {
+
+    if (editingIndex === null) {
+      return;
+    }
+
+
+    cardsData[editingIndex] = {
+
+      ...cardsData[editingIndex],
+
+      member:
+        document.getElementById(
+          "editMember"
+        ).value,
+
+      type:
+        document.getElementById(
+          "editType"
+        ).value,
+
+      album:
+        document.getElementById(
+          "editAlbum"
+        ).value,
+
+      version:
+        document.getElementById(
+          "editVersion"
+        ).value,
+
+      image:
+        document.getElementById(
+          "editImage"
+        ).value
+
+    };
+
+
+    saveData();
+
+    closeEdit();
+
+    renderCards();
+
+  }
+
+
+  document
+    .querySelectorAll(".member")
+    .forEach(function(button) {
+
+      button.addEventListener(
+        "click",
+        function() {
+
+          document
+            .querySelectorAll(".member")
+            .forEach(function(btn) {
+
+              btn.classList.remove(
+                "active"
+              );
+
+            });
+
+
+          button.classList.add(
+            "active"
+          );
+
+
+          selectedMember =
+            button.dataset.member;
+
+
+          renderCards();
+
+        }
+      );
+
+    });
+
+
+  search.addEventListener(
+    "input",
+    function() {
+
+      renderCards();
+
+    }
+  );
+
+
+  renderCards();
+
 </script>
 
 </body>
