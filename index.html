@@ -6,6 +6,8 @@
 
   <title>SKZ Pocalist</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -16,6 +18,16 @@
       font-family: Arial, sans-serif;
       background: #f7f7f7;
       color: #222;
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
     }
 
     header {
@@ -35,10 +47,31 @@
       color: #bbb;
     }
 
+    .header-buttons {
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-button {
+      border: 1px solid #555;
+      background: transparent;
+      color: white;
+      padding: 9px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .header-button:hover {
+      background: #333;
+    }
+
     .container {
       max-width: 900px;
       margin: auto;
-      padding: 25px 16px 50px;
+      padding: 25px 16px 60px;
     }
 
     .status {
@@ -55,6 +88,12 @@
       font-weight: bold;
     }
 
+    .status-detail {
+      margin-top: 7px;
+      color: #777;
+      font-size: 13px;
+    }
+
     .search {
       width: 100%;
       padding: 14px 16px;
@@ -63,25 +102,45 @@
       font-size: 15px;
       margin-bottom: 15px;
       background: white;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: #111;
+    }
+
+    .filter-title {
+      font-size: 13px;
+      font-weight: bold;
+      margin: 18px 0 8px;
     }
 
     .members {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
-      margin-bottom: 25px;
+      margin-bottom: 15px;
     }
 
-    .member {
+    .ownership-filter {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .member,
+    .ownership-button {
       border: 0;
       padding: 11px 5px;
       border-radius: 10px;
       background: white;
-      cursor: pointer;
       font-size: 14px;
+      color: #222;
     }
 
-    .member.active {
+    .member.active,
+    .ownership-button.active {
       background: #111;
       color: white;
     }
@@ -97,9 +156,13 @@
       background: white;
       border-radius: 15px;
       padding: 12px;
-      cursor: pointer;
       border: 3px solid transparent;
       box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      transition: 0.15s;
+    }
+
+    .card:active {
+      transform: scale(0.98);
     }
 
     .card.is-owned {
@@ -108,7 +171,7 @@
 
     .card-image {
       width: 100%;
-      height: 230px;
+      height: 270px;
       background: #eee;
       border-radius: 10px;
       display: flex;
@@ -116,6 +179,7 @@
       justify-content: center;
       color: #999;
       overflow: hidden;
+      cursor: pointer;
     }
 
     .card-image img {
@@ -131,7 +195,7 @@
     }
 
     .card p {
-      margin: 3px;
+      margin: 4px 3px;
       color: #777;
       font-size: 13px;
     }
@@ -163,31 +227,50 @@
       display: block;
     }
 
-    .edit-button {
-      width: 100%;
+    .card-buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
       margin-top: 12px;
+    }
+
+    .card-button {
       border: 0;
       border-radius: 9px;
-      padding: 9px;
-      background: #f1f1f1;
+      padding: 10px;
       font-size: 13px;
-      cursor: pointer;
     }
 
-    .edit-button:active {
-      background: #ddd;
+    .detail-button {
+      background: #111;
+      color: white;
     }
 
-    /* 수정창 */
+    .admin-edit-button {
+      background: #eee;
+      color: #222;
+    }
+
+    .empty,
+    .loading {
+      grid-column: 1 / -1;
+      background: white;
+      border-radius: 15px;
+      padding: 45px 20px;
+      text-align: center;
+      color: #888;
+    }
+
+    /* 모달 */
 
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.58);
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 18px;
       z-index: 1000;
     }
 
@@ -197,8 +280,8 @@
 
     .modal-box {
       width: 100%;
-      max-width: 430px;
-      max-height: 90vh;
+      max-width: 460px;
+      max-height: 92vh;
       overflow-y: auto;
       background: white;
       border-radius: 18px;
@@ -206,8 +289,8 @@
     }
 
     .modal-box h2 {
-      margin-top: 0;
-      margin-bottom: 20px;
+      margin: 0 0 20px;
+      font-size: 21px;
     }
 
     .form-group {
@@ -222,13 +305,20 @@
     }
 
     .form-group input,
-    .form-group select {
+    .form-group select,
+    .form-group textarea {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
       border-radius: 10px;
       font-size: 14px;
       background: white;
+      outline: none;
+    }
+
+    .form-group textarea {
+      min-height: 90px;
+      resize: vertical;
     }
 
     .modal-buttons {
@@ -243,7 +333,6 @@
       border-radius: 10px;
       padding: 12px;
       font-size: 14px;
-      cursor: pointer;
     }
 
     .cancel-button {
@@ -255,7 +344,118 @@
       color: white;
     }
 
+    .delete-button {
+      background: #d93025;
+      color: white;
+    }
+
+    .full-button {
+      grid-column: 1 / -1;
+    }
+
+    /* 상세 */
+
+    .detail-image {
+      width: 100%;
+      max-height: 55vh;
+      object-fit: contain;
+      background: #f2f2f2;
+      border-radius: 12px;
+    }
+
+    .detail-info {
+      margin-top: 18px;
+    }
+
+    .detail-info h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 11px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+    }
+
+    .detail-row span:first-child {
+      color: #888;
+    }
+
+    .detail-owned-button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 18px;
+      background: #111;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .detail-owned-button.not-owned {
+      background: #eee;
+      color: #222;
+    }
+
+    /* 로그인 */
+
+    .login-message {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      margin-bottom: 15px;
+      color: #666;
+    }
+
+    .user-info {
+      font-size: 12px;
+      color: #bbb;
+      margin-top: 8px;
+    }
+
+    /* 관리자 */
+
+    .admin-panel {
+      background: white;
+      border-radius: 15px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .admin-panel h2 {
+      margin: 0 0 8px;
+      font-size: 19px;
+    }
+
+    .admin-panel p {
+      margin: 0 0 15px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .add-card-button {
+      width: 100%;
+      border: 0;
+      border-radius: 11px;
+      padding: 13px;
+      background: #111;
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
     @media (max-width: 600px) {
+
+      .container {
+        padding: 18px 12px 45px;
+      }
 
       .members {
         grid-template-columns: repeat(3, 1fr);
@@ -270,7 +470,20 @@
       }
 
       .card-image {
-        height: 210px;
+        height: 220px;
+      }
+
+      .card h3 {
+        font-size: 14px;
+      }
+
+      .card p {
+        font-size: 12px;
+      }
+
+      .owned {
+        top: 15px;
+        right: 15px;
       }
     }
   </style>
@@ -279,19 +492,96 @@
 <body>
 
 <header>
+
   <h1>SKZ Pocalist</h1>
+
   <p>My Stray Kids Photocard List</p>
+
+  <div class="header-buttons">
+
+    <button
+      id="loginButton"
+      class="header-button">
+      로그인
+    </button>
+
+    <button
+      id="logoutButton"
+      class="header-button"
+      style="display:none;">
+      로그아웃
+    </button>
+
+  </div>
+
+  <div
+    id="userInfo"
+    class="user-info">
+  </div>
+
 </header>
+
 
 <div class="container">
 
-  <div class="status">
-    <div class="status-number">
-      <span id="ownedCount">0</span> /
-      <span id="totalCount">8</span>
-    </div>
-    <div>보유 포카</div>
+  <!-- 관리자 패널 -->
+
+  <div
+    id="adminPanel"
+    class="admin-panel"
+    style="display:none;">
+
+    <h2>관리자</h2>
+
+    <p>
+      포카를 등록하거나 기존 포카 정보를 관리할 수 있어요.
+    </p>
+
+    <button
+      id="addCardButton"
+      class="add-card-button">
+      ＋ 포카 등록
+    </button>
+
   </div>
+
+
+  <!-- 보유 현황 -->
+
+  <div class="status">
+
+    <div class="status-number">
+
+      <span id="ownedCount">
+        0
+      </span>
+
+      /
+
+      <span id="totalCount">
+        0
+      </span>
+
+    </div>
+
+    <div>
+      보유 포카
+    </div>
+
+    <div class="status-detail">
+
+      미보유
+      <span id="missingCount">
+        0
+      </span>
+      장
+
+    </div>
+
+  </div>
+
+
+  <!-- 검색 -->
 
   <input
     id="search"
@@ -300,104 +590,344 @@
     placeholder="포카를 검색해보세요 🔍"
   >
 
+
+  <!-- 멤버 필터 -->
+
+  <div class="filter-title">
+    멤버
+  </div>
+
   <div class="members">
 
-    <button class="member active" data-member="전체">전체</button>
-    <button class="member" data-member="방찬">방찬</button>
-    <button class="member" data-member="리노">리노</button>
-    <button class="member" data-member="창빈">창빈</button>
-    <button class="member" data-member="현진">현진</button>
-    <button class="member" data-member="한">한</button>
-    <button class="member" data-member="필릭스">필릭스</button>
-    <button class="member" data-member="승민">승민</button>
-    <button class="member" data-member="아이엔">아이엔</button>
+    <button
+      class="member active"
+      data-member="전체">
+      전체
+    </button>
+
+    <button
+      class="member"
+      data-member="방찬">
+      방찬
+    </button>
+
+    <button
+      class="member"
+      data-member="리노">
+      리노
+    </button>
+
+    <button
+      class="member"
+      data-member="창빈">
+      창빈
+    </button>
+
+    <button
+      class="member"
+      data-member="현진">
+      현진
+    </button>
+
+    <button
+      class="member"
+      data-member="한">
+      한
+    </button>
+
+    <button
+      class="member"
+      data-member="필릭스">
+      필릭스
+    </button>
+
+    <button
+      class="member"
+      data-member="승민">
+      승민
+    </button>
+
+    <button
+      class="member"
+      data-member="아이엔">
+      아이엔
+    </button>
 
   </div>
 
-  <div class="cards" id="cards"></div>
+
+  <!-- 보유 필터 -->
+
+  <div class="filter-title">
+    보유 상태
+  </div>
+
+  <div class="ownership-filter">
+
+    <button
+      class="ownership-button active"
+      data-owned="전체">
+      전체
+    </button>
+
+    <button
+      class="ownership-button"
+      data-owned="보유">
+      보유
+    </button>
+
+    <button
+      class="ownership-button"
+      data-owned="미보유">
+      미보유
+    </button>
+
+  </div>
+
+
+  <!-- 포카 -->
+
+  <div
+    class="cards"
+    id="cards">
+
+    <div class="loading">
+      포카를 불러오는 중...
+    </div>
+
+  </div>
 
 </div>
 
 
-<!-- 수정창 -->
+<!-- 로그인 모달 -->
 
-<div class="modal" id="editModal">
+<div
+  class="modal"
+  id="loginModal">
 
   <div class="modal-box">
 
-    <h2>포카 정보 수정</h2>
+    <h2>
+      로그인
+    </h2>
 
-    <div class="form-group">
-      <label>멤버</label>
-
-      <select id="editMember">
-        <option>방찬</option>
-        <option>리노</option>
-        <option>창빈</option>
-        <option>현진</option>
-        <option>한</option>
-        <option>필릭스</option>
-        <option>승민</option>
-        <option>아이엔</option>
-      </select>
+    <div class="login-message">
+      로그인하면 내가 보유한 포카를 저장할 수 있어요.
     </div>
 
     <div class="form-group">
-      <label>포카 종류</label>
 
-      <select id="editType">
-        <option>앨범</option>
-        <option>미공포</option>
-        <option>특전</option>
-        <option>팬사인회</option>
-        <option>기타</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>앨범 / 행사명</label>
+      <label>
+        이메일
+      </label>
 
       <input
-        id="editAlbum"
-        type="text"
-        placeholder="예: ATE / 2026 팬미팅"
+        id="loginEmail"
+        type="email"
+        placeholder="이메일"
       >
+
     </div>
 
     <div class="form-group">
-      <label>버전</label>
+
+      <label>
+        비밀번호
+      </label>
 
       <input
-        id="editVersion"
-        type="text"
-        placeholder="예: A VER. / 일반"
+        id="loginPassword"
+        type="password"
+        placeholder="비밀번호"
       >
-    </div>
 
-    <div class="form-group">
-      <label>사진 URL</label>
-
-      <input
-        id="editImage"
-        type="text"
-        placeholder="Supabase 사진 URL"
-      >
     </div>
 
     <div class="modal-buttons">
 
       <button
         class="cancel-button"
-        onclick="closeEdit()"
-      >
+        id="closeLoginButton">
         취소
       </button>
 
       <button
         class="save-button"
-        onclick="saveEdit()"
+        id="submitLoginButton">
+        로그인
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- 포카 상세 모달 -->
+
+<div
+  class="modal"
+  id="detailModal">
+
+  <div class="modal-box">
+
+    <h2>
+      포카 상세
+    </h2>
+
+    <div id="detailContent">
+    </div>
+
+    <div class="modal-buttons">
+
+      <button
+        class="cancel-button full-button"
+        onclick="closeModal('detailModal')">
+        닫기
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- 관리자 포카 등록/수정 -->
+
+<div
+  class="modal"
+  id="cardModal">
+
+  <div class="modal-box">
+
+    <h2 id="cardModalTitle">
+      포카 등록
+    </h2>
+
+    <input
+      type="hidden"
+      id="editCardId"
+    >
+
+    <div class="form-group">
+
+      <label>
+        포카 이름
+      </label>
+
+      <input
+        id="cardName"
+        type="text"
+        placeholder="예: 필릭스 일반 포카 01"
       >
+
+    </div>
+
+    <div class="form-group">
+
+      <label>
+        멤버
+      </label>
+
+      <select id="cardMember">
+
+        <option value="방찬">방찬</option>
+        <option value="리노">리노</option>
+        <option value="창빈">창빈</option>
+        <option value="현진">현진</option>
+        <option value="한">한</option>
+        <option value="필릭스">필릭스</option>
+        <option value="승민">승민</option>
+        <option value="아이엔">아이엔</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>
+        포카 종류
+      </label>
+
+      <select id="cardCategory">
+
+        <option value="앨범">앨범</option>
+        <option value="미공포">미공포</option>
+        <option value="특전">특전</option>
+        <option value="팬사인회">팬사인회</option>
+        <option value="럭키드로우">럭키드로우</option>
+        <option value="팬미팅">팬미팅</option>
+        <option value="시즌그리팅">시즌그리팅</option>
+        <option value="기타">기타</option>
+
+      </select>
+
+    </div>
+
+    <div class="form-group">
+
+      <label>
+        앨범 / 행사명
+      </label>
+
+      <input
+        id="cardAlbum"
+        type="text"
+        placeholder="예: ATE / 2026 팬미팅"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label>
+        포카 사진 URL
+      </label>
+
+      <input
+        id="cardImage"
+        type="url"
+        placeholder="Supabase Storage 사진 주소"
+      >
+
+    </div>
+
+    <div class="form-group">
+
+      <label>
+        설명
+      </label>
+
+      <textarea
+        id="cardDescription"
+        placeholder="필요한 설명을 입력하세요."
+      ></textarea>
+
+    </div>
+
+    <div class="modal-buttons">
+
+      <button
+        class="cancel-button"
+        onclick="closeModal('cardModal')">
+        취소
+      </button>
+
+      <button
+        class="save-button"
+        id="saveCardButton">
         저장
+      </button>
+
+      <button
+        class="delete-button full-button"
+        id="deleteCardButton"
+        style="display:none;">
+        포카 삭제
       </button>
 
     </div>
@@ -409,400 +939,1276 @@
 
 <script>
 
-  const defaultCards = [
+/* =====================================================
+   SUPABASE
+===================================================== */
 
-    {
-      member: "필릭스",
-      type: "미공포",
-      album: "",
-      version: "",
-      image: "https://cvxmuuzrfmqrsralozxe.supabase.co/storage/v1/object/public/photocards/Screenshot_20260818_085423.jpg",
-      owned: false
-    },
+const SUPABASE_URL =
+  "https://cvxmuuzrfmqrsralozxe.supabase.co";
 
-    {
-      member: "필릭스",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
+const SUPABASE_KEY =
+  "sb_publishable_hu0Sugj2kpd0XtX1uvuReQ_QxnxRYIL";
 
-    {
-      member: "현진",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-    {
-      member: "리노",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
 
-    {
-      member: "방찬",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
+/* =====================================================
+   상태
+===================================================== */
 
-    {
-      member: "창빈",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
+let cardsData = [];
 
-    {
-      member: "한",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
-    },
+let selectedMember = "전체";
 
-    {
-      member: "승민",
-      type: "앨범",
-      album: "",
-      version: "",
-      image: "",
-      owned: false
+let selectedOwnership = "전체";
+
+let currentUser = null;
+
+let isAdmin = false;
+
+
+/* =====================================================
+   HTML 요소
+===================================================== */
+
+const cardsContainer =
+  document.getElementById("cards");
+
+const ownedCount =
+  document.getElementById("ownedCount");
+
+const totalCount =
+  document.getElementById("totalCount");
+
+const missingCount =
+  document.getElementById("missingCount");
+
+const search =
+  document.getElementById("search");
+
+const loginButton =
+  document.getElementById("loginButton");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+const userInfo =
+  document.getElementById("userInfo");
+
+const adminPanel =
+  document.getElementById("adminPanel");
+
+const loginModal =
+  document.getElementById("loginModal");
+
+const cardModal =
+  document.getElementById("cardModal");
+
+const detailModal =
+  document.getElementById("detailModal");
+
+
+/* =====================================================
+   로그인 상태 확인
+===================================================== */
+
+async function checkUser() {
+
+  const {
+    data
+  } =
+    await supabaseClient.auth.getUser();
+
+  currentUser =
+    data.user || null;
+
+
+  /*
+    관리자 여부는
+    아래 이메일을 네 관리자 이메일로 바꿔서 사용.
+
+    ⚠️ 여기에는 네 관리자 계정 이메일만 입력.
+  */
+
+  const ADMIN_EMAIL =
+    "g5150921891@gmail.com";
+
+  isAdmin =
+    !!currentUser &&
+    currentUser.email === ADMIN_EMAIL;
+
+
+  updateLoginUI();
+
+}
+
+
+/* =====================================================
+   로그인 화면
+===================================================== */
+
+function updateLoginUI() {
+
+  if (currentUser) {
+
+    loginButton.style.display =
+      "none";
+
+    logoutButton.style.display =
+      "inline-block";
+
+    userInfo.textContent =
+      currentUser.email;
+
+
+    if (isAdmin) {
+
+      adminPanel.style.display =
+        "block";
+
+    } else {
+
+      adminPanel.style.display =
+        "none";
+
     }
 
-  ];
+  } else {
+
+    loginButton.style.display =
+      "inline-block";
+
+    logoutButton.style.display =
+      "none";
+
+    userInfo.textContent =
+      "";
+
+    adminPanel.style.display =
+      "none";
+
+  }
+
+}
 
 
-  let cardsData =
-    JSON.parse(localStorage.getItem("skzPocalistCards"))
-    || defaultCards;
+/* =====================================================
+   로그인
+===================================================== */
+
+async function login() {
+
+  const email =
+    document
+      .getElementById("loginEmail")
+      .value
+      .trim();
+
+  const password =
+    document
+      .getElementById("loginPassword")
+      .value;
 
 
-  let selectedMember = "전체";
-  let editingIndex = null;
+  if (!email || !password) {
+
+    alert(
+      "이메일과 비밀번호를 입력해주세요."
+    );
+
+    return;
+
+  }
 
 
-  const cardsContainer =
-    document.getElementById("cards");
+  const {
+    error
+  } =
+    await supabaseClient.auth.signInWithPassword({
 
-  const ownedCount =
-    document.getElementById("ownedCount");
+      email:
+        email,
 
-  const totalCount =
-    document.getElementById("totalCount");
+      password:
+        password
 
-  const search =
-    document.getElementById("search");
+    });
 
 
-  function saveData() {
+  if (error) {
 
-    localStorage.setItem(
-      "skzPocalistCards",
-      JSON.stringify(cardsData)
+    alert(
+      "로그인에 실패했어요.\n" +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  closeModal("loginModal");
+
+  await checkUser();
+
+  await loadCards();
+
+}
+
+
+/* =====================================================
+   로그아웃
+===================================================== */
+
+async function logout() {
+
+  await supabaseClient.auth.signOut();
+
+  currentUser = null;
+
+  isAdmin = false;
+
+  updateLoginUI();
+
+  await loadCards();
+
+}
+
+
+/* =====================================================
+   포카 불러오기
+===================================================== */
+
+async function loadCards() {
+
+  cardsContainer.innerHTML = `
+    <div class="loading">
+      포카를 불러오는 중...
+    </div>
+  `;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("photocards")
+      .select("*")
+      .order("id", {
+        ascending: true
+      });
+
+
+  if (error) {
+
+    console.error(error);
+
+    cardsContainer.innerHTML = `
+      <div class="empty">
+        포카를 불러오지 못했어요.<br><br>
+        Supabase 설정을 확인해주세요.
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  cardsData =
+    data || [];
+
+
+  renderCards();
+
+}
+
+
+/* =====================================================
+   포카 렌더링
+===================================================== */
+
+function renderCards() {
+
+  cardsContainer.innerHTML = "";
+
+
+  const keyword =
+    search.value
+      .trim()
+      .toLowerCase();
+
+
+  let visibleCount = 0;
+
+
+  cardsData.forEach(function(card) {
+
+
+    const memberMatch =
+      selectedMember === "전체"
+      ||
+      card.member === selectedMember;
+
+
+    const searchText = (
+
+      (card.name || "") +
+      " " +
+      (card.member || "") +
+      " " +
+      (card.category || "") +
+      " " +
+      (card.album || "") +
+      " " +
+      (card.description || "")
+
+    ).toLowerCase();
+
+
+    const searchMatch =
+      searchText.includes(keyword);
+
+
+    /*
+      현재 DB에 개인 보유 테이블을 아직 만들기 전이므로
+      임시로 false 처리.
+
+      다음 단계에서
+      user_collections 테이블을 연결하면
+      사용자마다 보유 여부가 따로 저장됨.
+    */
+
+    const owned =
+      false;
+
+
+    let ownershipMatch = true;
+
+
+    if (
+      selectedOwnership === "보유"
+    ) {
+
+      ownershipMatch =
+        owned === true;
+
+    }
+
+
+    if (
+      selectedOwnership === "미보유"
+    ) {
+
+      ownershipMatch =
+        owned === false;
+
+    }
+
+
+    if (
+      !memberMatch ||
+      !searchMatch ||
+      !ownershipMatch
+    ) {
+
+      return;
+
+    }
+
+
+    visibleCount++;
+
+
+    const div =
+      document.createElement("div");
+
+
+    div.className =
+      "card";
+
+
+    if (owned) {
+
+      div.classList.add(
+        "is-owned"
+      );
+
+    }
+
+
+    const imageHTML =
+      card.image_url
+
+      ?
+
+      `
+        <img
+          src="${escapeHTML(card.image_url)}"
+          alt="${escapeHTML(card.name || card.member || "포카")}"
+        >
+      `
+
+      :
+
+      "포카 이미지";
+
+
+    div.innerHTML = `
+
+      <div
+        class="card-image"
+        data-id="${card.id}">
+        ${imageHTML}
+      </div>
+
+      <h3>
+        ${escapeHTML(
+          card.name ||
+          card.member ||
+          "포카"
+        )}
+      </h3>
+
+      <p>
+        ${escapeHTML(
+          card.album ||
+          "앨범 / 행사명 미입력"
+        )}
+      </p>
+
+      <p>
+        ${escapeHTML(
+          card.member ||
+          ""
+        )}
+      </p>
+
+      <span class="card-type">
+        ${escapeHTML(
+          card.category ||
+          "기타"
+        )}
+      </span>
+
+      <div class="owned">
+        ✓ 보유
+      </div>
+
+      <div class="card-buttons">
+
+        <button
+          class="card-button detail-button"
+          data-id="${card.id}">
+          자세히 보기
+        </button>
+
+        ${
+          isAdmin
+          ?
+          `
+          <button
+            class="card-button admin-edit-button"
+            data-id="${card.id}">
+            ✏️ 수정
+          </button>
+          `
+          :
+          ""
+        }
+
+      </div>
+    `;
+
+
+    const detailButton =
+      div.querySelector(
+        ".detail-button"
+      );
+
+
+    detailButton.addEventListener(
+      "click",
+      function() {
+
+        openDetail(card.id);
+
+      }
+    );
+
+
+    const image =
+      div.querySelector(
+        ".card-image"
+      );
+
+
+    image.addEventListener(
+      "click",
+      function() {
+
+        openDetail(card.id);
+
+      }
+    );
+
+
+    if (isAdmin) {
+
+      const editButton =
+        div.querySelector(
+          ".admin-edit-button"
+        );
+
+
+      if (editButton) {
+
+        editButton.addEventListener(
+          "click",
+          function() {
+
+            openEditCard(card.id);
+
+          }
+        );
+
+      }
+
+    }
+
+
+    cardsContainer.appendChild(div);
+
+  });
+
+
+  if (visibleCount === 0) {
+
+    cardsContainer.innerHTML = `
+      <div class="empty">
+        조건에 맞는 포카가 없어요.
+      </div>
+    `;
+
+  }
+
+
+  updateCount();
+
+}
+
+
+/* =====================================================
+   숫자
+===================================================== */
+
+function updateCount() {
+
+  const total =
+    cardsData.length;
+
+
+  /*
+    현재는 개인 보유 테이블 연결 전이라
+    보유 수는 0으로 표시.
+
+    다음 단계에서 실제 사용자별 숫자로 연결.
+  */
+
+  const owned = 0;
+
+  const missing =
+    total - owned;
+
+
+  totalCount.textContent =
+    total;
+
+  ownedCount.textContent =
+    owned;
+
+  missingCount.textContent =
+    missing;
+
+}
+
+
+/* =====================================================
+   상세
+===================================================== */
+
+function openDetail(id) {
+
+  const card =
+    cardsData.find(
+      function(item) {
+
+        return item.id === id;
+
+      }
+    );
+
+
+  if (!card) {
+    return;
+  }
+
+
+  document.getElementById(
+    "detailContent"
+  ).innerHTML = `
+
+    ${
+      card.image_url
+
+      ?
+
+      `
+      <img
+        class="detail-image"
+        src="${escapeHTML(card.image_url)}"
+        alt="${escapeHTML(card.name || "포카")}"
+      >
+      `
+
+      :
+
+      `
+      <div class="empty">
+        등록된 사진이 없습니다.
+      </div>
+      `
+    }
+
+    <div class="detail-info">
+
+      <h3>
+        ${escapeHTML(
+          card.name ||
+          card.member ||
+          "포카"
+        )}
+      </h3>
+
+      <div class="detail-row">
+        <span>멤버</span>
+        <strong>
+          ${escapeHTML(
+            card.member || "-"
+          )}
+        </strong>
+      </div>
+
+      <div class="detail-row">
+        <span>앨범 / 행사</span>
+        <strong>
+          ${escapeHTML(
+            card.album || "-"
+          )}
+        </strong>
+      </div>
+
+      <div class="detail-row">
+        <span>종류</span>
+        <strong>
+          ${escapeHTML(
+            card.category || "-"
+          )}
+        </strong>
+      </div>
+
+      <div class="detail-row">
+        <span>설명</span>
+        <strong>
+          ${escapeHTML(
+            card.description || "-"
+          )}
+        </strong>
+      </div>
+
+      <button
+        class="detail-owned-button not-owned"
+        onclick="toggleOwned(${card.id})">
+        아직 보유하지 않았어요
+      </button>
+
+    </div>
+  `;
+
+
+  detailModal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =====================================================
+   보유 체크
+===================================================== */
+
+async function toggleOwned(id) {
+
+  if (!currentUser) {
+
+    alert(
+      "보유 포카를 저장하려면 먼저 로그인해주세요."
+    );
+
+    loginModal.classList.add(
+      "show"
+    );
+
+    return;
+
+  }
+
+
+  /*
+    개인 보유 기능은
+    다음 단계에서 user_collections 테이블을
+    만든 뒤 실제 저장하도록 연결할 예정.
+  */
+
+  alert(
+    "사용자별 보유 저장 기능은 다음 단계에서 연결할게요!"
+  );
+
+}
+
+
+/* =====================================================
+   관리자 포카 등록
+===================================================== */
+
+function openAddCard() {
+
+  if (!isAdmin) {
+
+    alert(
+      "관리자만 사용할 수 있어요."
+    );
+
+    return;
+
+  }
+
+
+  document.getElementById(
+    "cardModalTitle"
+  ).textContent =
+    "포카 등록";
+
+
+  document.getElementById(
+    "editCardId"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "cardName"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "cardMember"
+  ).value =
+    "방찬";
+
+
+  document.getElementById(
+    "cardCategory"
+  ).value =
+    "앨범";
+
+
+  document.getElementById(
+    "cardAlbum"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "cardImage"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "cardDescription"
+  ).value =
+    "";
+
+
+  document.getElementById(
+    "deleteCardButton"
+  ).style.display =
+    "none";
+
+
+  cardModal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =====================================================
+   관리자 포카 수정
+===================================================== */
+
+function openEditCard(id) {
+
+  if (!isAdmin) {
+
+    alert(
+      "관리자만 사용할 수 있어요."
+    );
+
+    return;
+
+  }
+
+
+  const card =
+    cardsData.find(
+      function(item) {
+
+        return item.id === id;
+
+      }
+    );
+
+
+  if (!card) {
+    return;
+  }
+
+
+  document.getElementById(
+    "cardModalTitle"
+  ).textContent =
+    "포카 정보 수정";
+
+
+  document.getElementById(
+    "editCardId"
+  ).value =
+    card.id;
+
+
+  document.getElementById(
+    "cardName"
+  ).value =
+    card.name || "";
+
+
+  document.getElementById(
+    "cardMember"
+  ).value =
+    card.member || "방찬";
+
+
+  document.getElementById(
+    "cardCategory"
+  ).value =
+    card.category || "앨범";
+
+
+  document.getElementById(
+    "cardAlbum"
+  ).value =
+    card.album || "";
+
+
+  document.getElementById(
+    "cardImage"
+  ).value =
+    card.image_url || "";
+
+
+  document.getElementById(
+    "cardDescription"
+  ).value =
+    card.description || "";
+
+
+  document.getElementById(
+    "deleteCardButton"
+  ).style.display =
+    "block";
+
+
+  cardModal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =====================================================
+   관리자 저장
+===================================================== */
+
+async function saveCard() {
+
+  if (!isAdmin) {
+
+    alert(
+      "관리자만 포카를 등록하거나 수정할 수 있어요."
+    );
+
+    return;
+
+  }
+
+
+  const id =
+    document.getElementById(
+      "editCardId"
+    ).value;
+
+
+  const cardData = {
+
+    name:
+      document.getElementById(
+        "cardName"
+      ).value.trim(),
+
+    member:
+      document.getElementById(
+        "cardMember"
+      ).value,
+
+    category:
+      document.getElementById(
+        "cardCategory"
+      ).value,
+
+    album:
+      document.getElementById(
+        "cardAlbum"
+      ).value.trim(),
+
+    image_url:
+      document.getElementById(
+        "cardImage"
+      ).value.trim(),
+
+    description:
+      document.getElementById(
+        "cardDescription"
+      ).value.trim()
+
+  };
+
+
+  if (!cardData.name) {
+
+    alert(
+      "포카 이름을 입력해주세요."
+    );
+
+    return;
+
+  }
+
+
+  let error;
+
+
+  if (id) {
+
+    const result =
+      await supabaseClient
+        .from("photocards")
+        .update(cardData)
+        .eq("id", id);
+
+
+    error =
+      result.error;
+
+  } else {
+
+    const result =
+      await supabaseClient
+        .from("photocards")
+        .insert(cardData);
+
+
+    error =
+      result.error;
+
+  }
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "저장에 실패했어요.\n\n" +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  closeModal(
+    "cardModal"
+  );
+
+
+  await loadCards();
+
+
+  alert(
+    id
+      ?
+      "포카 정보를 수정했어요."
+      :
+      "포카를 등록했어요."
+  );
+
+}
+
+
+/* =====================================================
+   관리자 삭제
+===================================================== */
+
+async function deleteCard() {
+
+  if (!isAdmin) {
+
+    alert(
+      "관리자만 사용할 수 있어요."
+    );
+
+    return;
+
+  }
+
+
+  const id =
+    document.getElementById(
+      "editCardId"
+    ).value;
+
+
+  if (!id) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      "정말 이 포카를 삭제할까요?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  const {
+    error
+  } =
+    await supabaseClient
+      .from("photocards")
+      .delete()
+      .eq("id", id);
+
+
+  if (error) {
+
+    console.error(error);
+
+    alert(
+      "삭제에 실패했어요.\n\n" +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  closeModal(
+    "cardModal"
+  );
+
+
+  await loadCards();
+
+
+  alert(
+    "포카를 삭제했어요."
+  );
+
+}
+
+
+/* =====================================================
+   모달 닫기
+===================================================== */
+
+function closeModal(id) {
+
+  document
+    .getElementById(id)
+    .classList.remove(
+      "show"
+    );
+
+}
+
+
+/* =====================================================
+   HTML 보안
+===================================================== */
+
+function escapeHTML(value) {
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =====================================================
+   이벤트
+===================================================== */
+
+loginButton.addEventListener(
+  "click",
+  function() {
+
+    loginModal.classList.add(
+      "show"
     );
 
   }
+);
 
 
-  function renderCards() {
+document
+  .getElementById(
+    "closeLoginButton"
+  )
+  .addEventListener(
+    "click",
+    function() {
 
-    cardsContainer.innerHTML = "";
-
-    const keyword =
-      search.value.toLowerCase();
-
-
-    cardsData.forEach(function(card, index) {
-
-      const memberMatch =
-        selectedMember === "전체"
-        || card.member === selectedMember;
-
-
-      const searchText =
-        (
-          card.member +
-          " " +
-          card.type +
-          " " +
-          card.album +
-          " " +
-          card.version
-        ).toLowerCase();
-
-
-      const searchMatch =
-        searchText.includes(keyword);
-
-
-      if (!memberMatch || !searchMatch) {
-        return;
-      }
-
-
-      const div =
-        document.createElement("div");
-
-      div.className = "card";
-
-      if (card.owned) {
-        div.classList.add("is-owned");
-      }
-
-
-      let imageHTML = "";
-
-      if (card.image) {
-
-        imageHTML = `
-          <img
-            src="${card.image}"
-            alt="${card.member} 포카"
-          >
-        `;
-
-      } else {
-
-        imageHTML = "포카 이미지";
-
-      }
-
-
-      div.innerHTML = `
-
-        <div class="card-image">
-          ${imageHTML}
-        </div>
-
-        <h3>${card.member}</h3>
-
-        <p>
-          ${card.album || "앨범 / 행사명 미입력"}
-        </p>
-
-        <p>
-          ${card.version || ""}
-        </p>
-
-        <span class="card-type">
-          ${card.type}
-        </span>
-
-        <div class="owned">
-          ✓ 보유
-        </div>
-
-        <button class="edit-button">
-          ✏️ 정보 수정
-        </button>
-
-      `;
-
-
-      div.addEventListener(
-        "click",
-        function(event) {
-
-          if (
-            event.target.classList.contains(
-              "edit-button"
-            )
-          ) {
-            return;
-          }
-
-          cardsData[index].owned =
-            !cardsData[index].owned;
-
-          saveData();
-
-          renderCards();
-
-          updateCount();
-
-        }
+      closeModal(
+        "loginModal"
       );
 
-
-      const editButton =
-        div.querySelector(".edit-button");
-
-
-      editButton.addEventListener(
-        "click",
-        function(event) {
-
-          event.stopPropagation();
-
-          openEdit(index);
-
-        }
-      );
-
-
-      cardsContainer.appendChild(div);
-
-    });
-
-
-    totalCount.textContent =
-      cardsData.length;
-
-    updateCount();
-
-  }
-
-
-  function updateCount() {
-
-    let count = 0;
-
-
-    cardsData.forEach(function(card) {
-
-      if (card.owned) {
-        count++;
-      }
-
-    });
-
-
-    ownedCount.textContent =
-      count;
-
-  }
-
-
-  function openEdit(index) {
-
-    editingIndex = index;
-
-    const card =
-      cardsData[index];
-
-
-    document.getElementById(
-      "editMember"
-    ).value = card.member;
-
-
-    document.getElementById(
-      "editType"
-    ).value = card.type;
-
-
-    document.getElementById(
-      "editAlbum"
-    ).value = card.album;
-
-
-    document.getElementById(
-      "editVersion"
-    ).value = card.version;
-
-
-    document.getElementById(
-      "editImage"
-    ).value = card.image;
-
-
-    document.getElementById(
-      "editModal"
-    ).classList.add("show");
-
-  }
-
-
-  function closeEdit() {
-
-    editingIndex = null;
-
-    document.getElementById(
-      "editModal"
-    ).classList.remove("show");
-
-  }
-
-
-  function saveEdit() {
-
-    if (editingIndex === null) {
-      return;
     }
+  );
 
 
-    cardsData[editingIndex] = {
-
-      ...cardsData[editingIndex],
-
-      member:
-        document.getElementById(
-          "editMember"
-        ).value,
-
-      type:
-        document.getElementById(
-          "editType"
-        ).value,
-
-      album:
-        document.getElementById(
-          "editAlbum"
-        ).value,
-
-      version:
-        document.getElementById(
-          "editVersion"
-        ).value,
-
-      image:
-        document.getElementById(
-          "editImage"
-        ).value
-
-    };
+document
+  .getElementById(
+    "submitLoginButton"
+  )
+  .addEventListener(
+    "click",
+    login
+  );
 
 
-    saveData();
-
-    closeEdit();
-
-    renderCards();
-
-  }
+logoutButton.addEventListener(
+  "click",
+  logout
+);
 
 
-  document
-    .querySelectorAll(".member")
-    .forEach(function(button) {
+document
+  .getElementById(
+    "addCardButton"
+  )
+  .addEventListener(
+    "click",
+    openAddCard
+  );
+
+
+document
+  .getElementById(
+    "saveCardButton"
+  )
+  .addEventListener(
+    "click",
+    saveCard
+  );
+
+
+document
+  .getElementById(
+    "deleteCardButton"
+  )
+  .addEventListener(
+    "click",
+    deleteCard
+  );
+
+
+document
+  .querySelectorAll(
+    ".member"
+  )
+  .forEach(
+    function(button) {
 
       button.addEventListener(
         "click",
         function() {
 
           document
-            .querySelectorAll(".member")
-            .forEach(function(btn) {
+            .querySelectorAll(
+              ".member"
+            )
+            .forEach(
+              function(btn) {
 
-              btn.classList.remove(
-                "active"
-              );
+                btn.classList.remove(
+                  "active"
+                );
 
-            });
+              }
+            );
 
 
           button.classList.add(
@@ -819,20 +2225,78 @@
         }
       );
 
-    });
+    }
+  );
 
 
-  search.addEventListener(
-    "input",
-    function() {
+document
+  .querySelectorAll(
+    ".ownership-button"
+  )
+  .forEach(
+    function(button) {
 
-      renderCards();
+      button.addEventListener(
+        "click",
+        function() {
+
+          document
+            .querySelectorAll(
+              ".ownership-button"
+            )
+            .forEach(
+              function(btn) {
+
+                btn.classList.remove(
+                  "active"
+                );
+
+              }
+            );
+
+
+          button.classList.add(
+            "active"
+          );
+
+
+          selectedOwnership =
+            button.dataset.owned;
+
+
+          renderCards();
+
+        }
+      );
 
     }
   );
 
 
-  renderCards();
+search.addEventListener(
+  "input",
+  function() {
+
+    renderCards();
+
+  }
+);
+
+
+/* =====================================================
+   시작
+===================================================== */
+
+async function start() {
+
+  await checkUser();
+
+  await loadCards();
+
+}
+
+
+start();
 
 </script>
 
