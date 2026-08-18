@@ -121,6 +121,13 @@
       overflow: hidden;
     }
 
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     .card.is-owned .card-image {
       opacity: 0.7;
     }
@@ -210,6 +217,20 @@
 
   <div class="cards">
 
+    <!-- 첫 번째 필릭스 포카 -->
+    <div class="card" data-member="필릭스">
+      <div class="card-image">
+        <img
+          src="https://cvxmuuzrfmqrsralozxe.supabase.co/storage/v1/object/public/photocards/Screenshot_20260818_085423.jpg"
+          alt="필릭스 포카"
+        >
+      </div>
+      <h3>필릭스</h3>
+      <p>앨범 / 버전</p>
+      <div class="owned">✓ 보유</div>
+    </div>
+
+    <!-- 두 번째 필릭스 -->
     <div class="card" data-member="필릭스">
       <div class="card-image">포카 이미지</div>
       <h3>필릭스</h3>
@@ -217,13 +238,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="필릭스">
-      <div class="card-image">포카 이미지</div>
-      <h3>필릭스</h3>
-      <p>앨범 / 버전</p>
-      <div class="owned">✓ 보유</div>
-    </div>
-
+    <!-- 현진 -->
     <div class="card" data-member="현진">
       <div class="card-image">포카 이미지</div>
       <h3>현진</h3>
@@ -231,6 +246,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
+    <!-- 리노 -->
     <div class="card" data-member="리노">
       <div class="card-image">포카 이미지</div>
       <h3>리노</h3>
@@ -238,6 +254,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
+    <!-- 방찬 -->
     <div class="card" data-member="방찬">
       <div class="card-image">포카 이미지</div>
       <h3>방찬</h3>
@@ -245,6 +262,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
+    <!-- 창빈 -->
     <div class="card" data-member="창빈">
       <div class="card-image">포카 이미지</div>
       <h3>창빈</h3>
@@ -252,6 +270,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
+    <!-- 한 -->
     <div class="card" data-member="한">
       <div class="card-image">포카 이미지</div>
       <h3>한</h3>
@@ -259,6 +278,7 @@
       <div class="owned">✓ 보유</div>
     </div>
 
+    <!-- 승민 -->
     <div class="card" data-member="승민">
       <div class="card-image">포카 이미지</div>
       <h3>승민</h3>
@@ -298,7 +318,7 @@
     ownedCount.textContent = count;
   }
 
-  // 멤버 버튼
+  // 멤버 선택
   buttons.forEach(function(button) {
     button.addEventListener("click", function() {
 
