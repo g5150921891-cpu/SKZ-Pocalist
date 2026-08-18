@@ -76,6 +76,7 @@
       border-radius: 10px;
       background: white;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .member.active {
@@ -97,6 +98,11 @@
       cursor: pointer;
       border: 3px solid transparent;
       box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+      transition: 0.15s;
+    }
+
+    .card:active {
+      transform: scale(0.97);
     }
 
     .card.is-owned {
@@ -112,6 +118,7 @@
       align-items: center;
       justify-content: center;
       color: #999;
+      overflow: hidden;
     }
 
     .card.is-owned .card-image {
@@ -190,54 +197,153 @@
   >
 
   <div class="members">
-
-    <button class="member active" onclick="filterMember('전체', this)">전체</button>
-    <button class="member" onclick="filterMember('방찬', this)">방찬</button>
-    <button class="member" onclick="filterMember('리노', this)">리노</button>
-    <button class="member" onclick="filterMember('창빈', this)">창빈</button>
-    <button class="member" onclick="filterMember('현진', this)">현진</button>
-    <button class="member" onclick="filterMember('한', this)">한</button>
-    <button class="member" onclick="filterMember('필릭스', this)">필릭스</button>
-    <button class="member" onclick="filterMember('승민', this)">승민</button>
-    <button class="member" onclick="filterMember('아이엔', this)">아이엔</button>
-
+    <button class="member active" data-member="전체">전체</button>
+    <button class="member" data-member="방찬">방찬</button>
+    <button class="member" data-member="리노">리노</button>
+    <button class="member" data-member="창빈">창빈</button>
+    <button class="member" data-member="현진">현진</button>
+    <button class="member" data-member="한">한</button>
+    <button class="member" data-member="필릭스">필릭스</button>
+    <button class="member" data-member="승민">승민</button>
+    <button class="member" data-member="아이엔">아이엔</button>
   </div>
 
   <div class="cards">
 
-    <div class="card" data-member="필릭스" data-name="필릭스 포카 1" onclick="toggleOwned(this)">
+    <div class="card" data-member="필릭스">
       <div class="card-image">포카 이미지</div>
       <h3>필릭스</h3>
       <p>앨범 / 버전</p>
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="필릭스" data-name="필릭스 포카 2" onclick="toggleOwned(this)">
+    <div class="card" data-member="필릭스">
       <div class="card-image">포카 이미지</div>
       <h3>필릭스</h3>
       <p>앨범 / 버전</p>
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="현진" data-name="현진 포카 1" onclick="toggleOwned(this)">
+    <div class="card" data-member="현진">
       <div class="card-image">포카 이미지</div>
       <h3>현진</h3>
       <p>앨범 / 버전</p>
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="리노" data-name="리노 포카 1" onclick="toggleOwned(this)">
+    <div class="card" data-member="리노">
       <div class="card-image">포카 이미지</div>
       <h3>리노</h3>
       <p>앨범 / 버전</p>
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="방찬" data-name="방찬 포카 1" onclick="toggleOwned(this)">
+    <div class="card" data-member="방찬">
       <div class="card-image">포카 이미지</div>
       <h3>방찬</h3>
       <p>앨범 / 버전</p>
       <div class="owned">✓ 보유</div>
     </div>
 
-    <div class="card" data-member="창빈" data-name="창빈 포카 1" onclick="toggleOwned(this
+    <div class="card" data-member="창빈">
+      <div class="card-image">포카 이미지</div>
+      <h3>창빈</h3>
+      <p>앨범 / 버전</p>
+      <div class="owned">✓ 보유</div>
+    </div>
+
+    <div class="card" data-member="한">
+      <div class="card-image">포카 이미지</div>
+      <h3>한</h3>
+      <p>앨범 / 버전</p>
+      <div class="owned">✓ 보유</div>
+    </div>
+
+    <div class="card" data-member="승민">
+      <div class="card-image">포카 이미지</div>
+      <h3>승민</h3>
+      <p>앨범 / 버전</p>
+      <div class="owned">✓ 보유</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const cards = document.querySelectorAll(".card");
+  const buttons = document.querySelectorAll(".member");
+  const search = document.getElementById("search");
+  const ownedCount = document.getElementById("ownedCount");
+
+  let selectedMember = "전체";
+
+  // 포카 클릭
+  cards.forEach(function(card) {
+    card.addEventListener("click", function() {
+      card.classList.toggle("is-owned");
+      updateCount();
+    });
+  });
+
+  // 보유 개수 업데이트
+  function updateCount() {
+    let count = 0;
+
+    cards.forEach(function(card) {
+      if (card.classList.contains("is-owned")) {
+        count++;
+      }
+    });
+
+    ownedCount.textContent = count;
+  }
+
+  // 멤버 버튼
+  buttons.forEach(function(button) {
+    button.addEventListener("click", function() {
+
+      buttons.forEach(function(btn) {
+        btn.classList.remove("active");
+      });
+
+      button.classList.add("active");
+
+      selectedMember = button.dataset.member;
+
+      filterCards();
+    });
+  });
+
+  // 검색
+  search.addEventListener("input", function() {
+    filterCards();
+  });
+
+  function filterCards() {
+
+    const keyword = search.value.toLowerCase();
+
+    cards.forEach(function(card) {
+
+      const member = card.dataset.member.toLowerCase();
+
+      const memberMatch =
+        selectedMember === "전체" ||
+        member === selectedMember.toLowerCase();
+
+      const searchMatch =
+        member.includes(keyword);
+
+      if (memberMatch && searchMatch) {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  }
+
+  updateCount();
+</script>
+
+</body>
+</html>
